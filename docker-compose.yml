@@ -15,6 +15,8 @@ services:
       - DD_VERSION=1.0
     volumes:
       - ./server:/app
+    # Bind mount hides image node_modules; install into the mounted tree at startup.
+    command: sh -c "npm install && node index.js"
     depends_on:
       - datadog-agent
 
@@ -24,13 +26,18 @@ services:
       - "3000:3000"
     volumes:
       - ./client/client:/app
+    environment:
+      - HOST=0.0.0.0
+      - BROWSER=none
+      - WATCHPACK_POLLING=true
+    command: sh -c "npm install && npm start"
     depends_on:
       - backend
 
   datadog-agent:
     image: gcr.io/datadoghq/agent:latest
     environment:
-      - DD_API_KEY=<REPLACE WITH API KEY>
+      - DD_API_KEY=${DD_API_KEY}
       - DD_SITE=datadoghq.com
       - DD_APM_ENABLED=true
       - DD_APM_RECEIVER_PORT=8136            # Agent listens on 8136

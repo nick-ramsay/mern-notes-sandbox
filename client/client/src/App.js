@@ -8,9 +8,19 @@ function App() {
   // 🔁 Centralized function to fetch notes
   const fetchNotes = () => {
     fetch('http://localhost:5000/notes')
-      .then(res => res.json())
-      .then(data => setNotes(data))
-      .catch(err => console.error('❌ Failed to fetch notes:', err));
+      .then(async res => {
+        const data = await res.json().catch(() => null);
+        if (!res.ok) {
+          console.error('❌ Failed to fetch notes:', data?.error ?? res.status);
+          setNotes([]);
+          return;
+        }
+        setNotes(Array.isArray(data) ? data : []);
+      })
+      .catch(err => {
+        console.error('❌ Failed to fetch notes:', err);
+        setNotes([]);
+      });
   };
 
   // 🧠 Fetch notes on component load
